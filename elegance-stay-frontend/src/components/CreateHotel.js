@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import axios from 'axios';
+import React, { useState } from 'react';
 
 const CreateHotel = ({ onClose, hotel, onHotelSaved }) => {
   const [formData, setFormData] = useState({
@@ -10,53 +10,34 @@ const CreateHotel = ({ onClose, hotel, onHotelSaved }) => {
     descripcion: hotel ? hotel.descripcion : '',
     image: null,
     price: hotel ? hotel.price : '',
+    category: hotel ? hotel.category : 'playa', // Valor por defecto
+    city: hotel ? hotel.city : 'San Andres', // Valor por defecto
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: value,
-    });
+    }));
   };
 
   const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       image: e.target.files[0],
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
-    data.append('name', formData.name);
-    data.append('location', formData.location);
-    data.append('rooms', formData.rooms);
-    data.append('amenities', formData.amenities.split(','));
-    data.append('descripcion', formData.descripcion);
-    data.append('price', formData.price);
-    if (formData.image) {
-      data.append('image', formData.image);
+    for (const key in formData) {
+      data.append(key, formData[key]);
     }
 
     try {
-      let response;
-      if (hotel) {
-        response = await axios.put(`http://localhost:5000/api/hotels/${hotel._id}`, data, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        alert('Hotel actualizado con éxito');
-      } else {
-        response = await axios.post('http://localhost:5000/api/hotels', data, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        alert('Hotel creado con éxito');
-      }
+      const response = await axios.post('http://localhost:5001/api/hotels', data);
       onHotelSaved(response.data);
       onClose();
     } catch (error) {
@@ -160,6 +141,36 @@ const CreateHotel = ({ onClose, hotel, onHotelSaved }) => {
               onChange={handleChange}
               className="w-full p-4 rounded-lg bg-white text-black font-bold border border-gray-600 focus:ring-4 focus:ring-pink outline-none"
             ></textarea>
+          </div>
+          <div className="flex flex-col">
+            <label className="block font-bold mb-2 text-gray-700">Categoría</label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full p-4 rounded-lg bg-white text-black font-bold border border-gray-600 focus:ring-4 focus:ring-pink outline-none"
+            >
+              <option value="playa">Playa</option>
+              <option value="montaña">Montaña</option>
+              <option value="finca">Finca</option>
+              <option value="ciudad">Ciudad</option>
+              <option value="pueblo">Pueblo</option>
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="block font-bold mb-2 text-gray-700">Ciudad</label>
+            <select
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              className="w-full p-4 rounded-lg bg-white text-black font-bold border border-gray-600 focus:ring-4 focus:ring-pink outline-none"
+            >
+              <option value="San Andres">San Andres</option>
+              <option value="Bogota">Bogota</option>
+              <option value="Medellin">Medellin</option>
+              <option value="Cali">Cali</option>
+              <option value="Cartagena">Cartagena</option>
+            </select>
           </div>
           <div className="flex flex-col">
             <label className="block font-bold mb-2 text-gray-700">Imagen</label>

@@ -4,16 +4,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import styled from 'styled-components';
 import Modal from './Modal';
+import CreateHotel from './CreateHotel';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
+const HotelList = ({ newHotel }) => {
   const [hotels, setHotels] = useState([]);
   const [filters, setFilters] = useState({
     name: '',
     price: '',
     rooms: '',
     date: null,
+    category: '',
+    city: '', // Agregar el campo de ciudad
   });
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -21,7 +24,7 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/hotels');
+        const response = await axios.get('http://localhost:5001/api/hotels');
         setHotels(response.data);
       } catch (error) {
         console.error('Error fetching hotels:', error);
@@ -39,8 +42,8 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/hotels/${id}`);
-      setHotels(hotels.filter((hotel) => hotel._id !== id));
+      await axios.delete(`http://localhost:5001/api/hotels/${id}`);
+      setHotels((prevHotels) => prevHotels.filter((hotel) => hotel._id !== id));
     } catch (error) {
       console.error('Error deleting hotel:', error);
     }
@@ -48,22 +51,35 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters({ ...filters, [name]: value });
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [name]: value,
+    }));
   };
 
   const handleDateChange = (date) => {
-    setFilters({ ...filters, date });
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      date,
+    }));
   };
 
   const filteredHotels = hotels.filter((hotel) => {
     return (
-      hotel.name.toLowerCase().includes(filters.name.toLowerCase()) &&
-      (!filters.price || hotel.price <= parseFloat(filters.price)) &&
-      (!filters.rooms || hotel.rooms >= parseInt(filters.rooms))
+      (filters.name === '' || hotel.name.toLowerCase().includes(filters.name.toLowerCase())) &&
+      (filters.price === '' || hotel.price <= parseFloat(filters.price)) &&
+      (filters.rooms === '' || hotel.rooms >= parseInt(filters.rooms)) &&
+      (filters.category === '' || hotel.category === filters.category) &&
+      (filters.city === '' || hotel.city === filters.city)
     );
   });
 
-  const handleImageClick = (hotel) => {
+  const handleAddHotel = () => {
+    setSelectedHotel(null);
+    setShowModal(true);
+  };
+
+  const handleEditHotel = (hotel) => {
     setSelectedHotel(hotel);
     setShowModal(true);
   };
@@ -71,6 +87,22 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedHotel(null);
+  };
+
+  const handleHotelSaved = (hotel) => {
+    if (selectedHotel) {
+      setHotels((prevHotels) =>
+        prevHotels.map((h) => (h._id === hotel._id ? hotel : h))
+      );
+    } else {
+      setHotels((prevHotels) => [...prevHotels, hotel]);
+    }
+    setShowModal(false);
+  };
+
+  const handleImageClick = (hotel) => {
+    setSelectedHotel(hotel);
+    setShowModal(true);
   };
 
   return (
@@ -104,6 +136,32 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
           onChange={handleFilterChange}
           className="bg-gray-200 text-black px-4 py-3 rounded-lg border border-gray-300 focus:ring-4 focus:ring-pink outline-none mb-4 w-full"
         />
+        <select
+          name="category"
+          value={filters.category}
+          onChange={handleFilterChange}
+          className="bg-gray-200 text-black px-4 py-3 rounded-lg border border-gray-300 focus:ring-4 focus:ring-pink outline-none mb-4 w-full"
+        >
+          <option value="">Todas las categorías</option>
+          <option value="playa">Playa</option>
+          <option value="montaña">Montaña</option>
+          <option value="finca">Finca</option>
+          <option value="ciudad">Ciudad</option>
+          <option value="pueblo">Pueblo</option>
+        </select>
+        <select
+          name="city"
+          value={filters.city}
+          onChange={handleFilterChange}
+          className="bg-gray-200 text-black px-4 py-3 rounded-lg border border-gray-300 focus:ring-4 focus:ring-pink outline-none mb-4 w-full"
+        >
+          <option value="">Todas las ciudades</option>
+          <option value="San Andres">San Andres</option>
+          <option value="Bogota">Bogota</option>
+          <option value="Medellin">Medellin</option>
+          <option value="Cali">Cali</option>
+          <option value="Cartagena">Cartagena</option>
+        </select>
         <DatePicker
           selected={filters.date}
           onChange={handleDateChange}
@@ -124,7 +182,7 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
             Hoteles Disponibles
           </h1>
           <button
-            onClick={onAddHotel}
+            onClick={handleAddHotel}
             className="bg-gradient-to-r from-pink to-pink-light text-white px-6 py-3 rounded shadow-md hover:from-pink-light hover:to-pink hover:text-white transition-transform transform hover:scale-105 flex items-center"
           >
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
@@ -142,6 +200,8 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
                 <th className="px-6 py-3">Habitaciones</th>
                 <th className="px-6 py-3">Precio</th>
                 <th className="px-6 py-3">Servicios</th>
+                <th className="px-6 py-3">Categoría</th>
+                <th className="px-6 py-3">Ciudad</th>
                 <th className="px-6 py-3 text-center">Acciones</th>
               </tr>
             </thead>
@@ -153,7 +213,7 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
                 >
                   <td className="px-6 py-3">
                     <img
-                      src={`http://localhost:5000/${hotel.image}`}
+                      src={`http://localhost:5001/${hotel.image}`}
                       alt={hotel.name}
                       className="h-16 w-16 rounded-lg object-cover cursor-pointer"
                       onClick={() => handleImageClick(hotel)}
@@ -166,11 +226,13 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
                   <td className="px-6 py-3 text-gray-600">
                     {hotel.amenities.join(', ')}
                   </td>
+                  <td className="px-6 py-3 text-gray-600">{hotel.category}</td>
+                  <td className="px-6 py-3 text-gray-600">{hotel.city}</td>
                   <td className="px-6 py-3 text-center">
                     <div className="flex justify-center items-center gap-2">
                       <StyledWrapper>
                         <button
-                          onClick={() => onEditHotel(hotel)}
+                          onClick={() => handleEditHotel(hotel)}
                           className="edit-button"
                         >
                           <svg className="edit-svgIcon" viewBox="0 0 512 512">
@@ -213,7 +275,7 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
       </div>
 
       <Modal show={showModal} onClose={handleCloseModal}>
-        {selectedHotel && (
+        {selectedHotel ? (
           <div>
             <h2 className="text-2xl font-bold mb-4">{selectedHotel.name}</h2>
             <p><strong>Ubicación:</strong> {selectedHotel.location}</p>
@@ -221,7 +283,11 @@ const HotelList = ({ onAddHotel, onEditHotel, newHotel }) => {
             <p><strong>Precio:</strong> ${selectedHotel.price}</p>
             <p><strong>Servicios:</strong> {selectedHotel.amenities.join(', ')}</p>
             <p><strong>Descripción:</strong> {selectedHotel.descripcion}</p>
+            <p><strong>Categoría:</strong> {selectedHotel.category}</p>
+            <p><strong>Ciudad:</strong> {selectedHotel.city}</p>
           </div>
+        ) : (
+          <CreateHotel onClose={handleCloseModal} onHotelSaved={handleHotelSaved} />
         )}
       </Modal>
     </div>

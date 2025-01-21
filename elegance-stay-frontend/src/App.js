@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './components/Home';
 import HotelList from './components/HotelList';
+import HotelOverview from './components/HotelOverview';
+import HotelDetails from './components/HotelDetails';
 import CreateHotel from './components/CreateHotel';
+import Auth from './components/Auth';
 import Header from './components/Header';
 import './App.css';
 
@@ -52,7 +55,10 @@ const AppContent = ({ showModal, selectedHotel, newHotel, handleAddHotel, handle
       {location.pathname !== '/' && <Header onAddHotel={handleAddHotel} />}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/hotels" element={<HotelList onAddHotel={handleAddHotel} onEditHotel={handleEditHotel} newHotel={newHotel} />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/hotels" element={<HotelOverview newHotel={newHotel} />} />
+        <Route path="/hotels/:hotelId" element={<HotelDetails />} />
+        <Route path="/manage-hotels" element={<HotelList onAddHotel={handleAddHotel} onEditHotel={handleEditHotel} newHotel={newHotel} />} />
       </Routes>
       {showModal && <CreateHotel onClose={handleCloseModal} hotel={selectedHotel} onHotelSaved={handleHotelSaved} />}
     </div>

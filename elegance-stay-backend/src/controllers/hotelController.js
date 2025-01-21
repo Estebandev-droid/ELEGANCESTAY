@@ -24,7 +24,7 @@ const getHotels = async (req, res) => {
 };
 
 const createHotel = async (req, res) => {
-    const { name, location, rooms, amenities, descripcion, price } = req.body;
+    const { name, location, rooms, amenities, descripcion, price, category, city } = req.body;
     const image = req.file ? req.file.path : null;
 
     if (!image) {
@@ -39,6 +39,8 @@ const createHotel = async (req, res) => {
         descripcion,
         price, 
         image,
+        category,
+        city,
     });
 
     try {
@@ -73,10 +75,23 @@ const deleteHotel = async (req, res) => {
     }
 };
 
+const getHotelById = async (req, res) => {
+    try {
+        const hotel = await Hotel.findById(req.params.id);
+        if (!hotel) {
+            return res.status(404).json({ message: 'Hotel not found' });
+        }
+        res.status(200).json(hotel);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getHotels,
     createHotel,
     updateHotel,
     deleteHotel,
+    getHotelById,
     upload,
 };

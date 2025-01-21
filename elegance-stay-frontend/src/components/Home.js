@@ -8,6 +8,10 @@ const Home = () => {
     navigate('/hotels');
   };
 
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+
   return (
     <div
       className="relative h-screen bg-cover bg-center flex items-center justify-center"
@@ -24,12 +28,20 @@ const Home = () => {
         <p className="text-lg md:text-2xl font-bold text-white mb-8">
           Explora destinos increíbles y encuentra hoteles que se adaptan a tus necesidades. Planifica tus vacaciones o viajes de negocios con comodidad y estilo.
         </p>
-        <button
-          onClick={handleStart}
-          className="bg-pink-600 hover:bg-pink-700 text-white font-semibold text-lg py-3 px-8 rounded-lg shadow-lg hover:shadow-pink-500/50 transition-all duration-300 transform hover:-translate-y-1"
-        >
-          Comenzar tu aventura
-        </button>
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={handleStart}
+            className="bg-pink-600 hover:bg-pink-700 text-white font-semibold text-lg py-3 px-8 rounded-lg shadow-lg hover:shadow-pink-500/50 transition-all duration-300 transform hover:-translate-y-1"
+          >
+            Comenzar tu aventura
+          </button>
+          <button
+            onClick={handleLogin}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg py-3 px-8 rounded-lg shadow-lg hover:shadow-blue-500/50 transition-all duration-300 transform hover:-translate-y-1"
+          >
+            Login
+          </button>
+        </div>
       </div>
 
       {/* Elementos decorativos */}

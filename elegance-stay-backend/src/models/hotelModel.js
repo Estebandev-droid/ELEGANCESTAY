@@ -29,6 +29,16 @@ const hotelSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    category: {
+        type: String,
+        required: true,
+        enum: ['playa', 'montaña', 'ciudad', 'pueblo'],
+    },
+    city: {
+        type: String,
+        required: true,
+        enum: ['San Andres', 'Bogota', 'Medellin', 'Cali', 'Cartagena'],
+    },
 });
 
 const Hotel = mongoose.model('Hotel', hotelSchema);
